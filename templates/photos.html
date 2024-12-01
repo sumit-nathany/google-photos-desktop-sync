@@ -35,6 +35,8 @@
             overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            color: inherit;
         }
 
         .photo-card:hover {
@@ -45,13 +47,6 @@
         .photo-card img {
             max-width: 100%;
             height: auto;
-        }
-
-        .photo-card p {
-            margin: 10px 0;
-            font-size: 14px;
-            color: #555;
-            text-align: center;
         }
 
         .back-link {
@@ -78,12 +73,11 @@
     <h1>{{ request.args.get('albumName') }}</h1>
     <div class="photo-grid">
         {% for photo in photos %}
-            <div class="photo-card">
-                <img src="{{ photo.baseUrl }}=w400-h300" alt="{{ photo.filename }}">
-                <p>{{ photo.filename }}</p>
-            </div>
-        {% else %}
-            <p style="text-align: center; width: 100%;">No photos found in this album.</p>
+        <div class="photo-item">
+            <a href="{{ url_for('photo_details', photoId=photo['id'], albumId=albumId, albumName=albumName) }}">
+                <img src="{{ photo['baseUrl'] }}=w200-h200" alt="{{ photo['filename'] }}">
+            </a>
+        </div>
         {% endfor %}
     </div>
     <a href="{{ url_for('list_albums') }}" class="back-link">Back to Albums</a>

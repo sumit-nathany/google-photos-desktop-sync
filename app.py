@@ -148,10 +148,62 @@ def list_photos():
             logger.error(f"API error: {response.status_code} - {response.text}")
             photos = []
 
-        return render_template('photos.html', photos=photos, albumName=album_name)
+        return render_template('photos.html', photos=photos, albumName=album_name, albumId=album_id)
     except Exception as e:
         logger.error(f"Error in list_photos route: {e}")
         return f"An error occurred: {e}", 500
+
+
+@app.route('/photo_details')
+def photo_details():
+    """Fetches and displays details of a specific photo."""
+    try:
+        if 'credentials' not in session:
+            return redirect(url_for('login'))
+
+        # Get photoId, albumId, and albumName from query parameters
+        photo_id = request.args.get('photoId')
+        album_id = request.args.get('albumId')
+        album_name = request.args.get('albumName')
+
+        if not photo_id:
+            return "Photo ID is required.", 400
+
+        # Reconstruct credentials
+        credentials = Credentials(
+            token=session['credentials']['token'],
+            refresh_token=session['credentials']['refresh_token'],
+            token_uri=session['credentials']['token_uri'],
+            client_id=session['credentials']['client_id'],
+            client_secret=session['credentials']['client_secret'],
+            scopes=session['credentials']['scopes']
+        )
+
+        # Fetch photo details using the Photos API
+        headers = {'Authorization': f'Bearer {credentials.token}'}
+        response = requests.get(
+            f'https://photoslibrary.googleapis.com/v1/mediaItems/{photo_id}',
+            headers=headers
+        )
+
+        if response.status_code == 200:
+            photo = response.json()
+        else:
+            logger.error(f"API error: {response.status_code} - {response.text}")
+            return f"Error fetching photo details: {response.text}", 500
+
+        # Pass photo details, albumId, and albumName to the template
+        return render_template(
+            'photo_details.html',
+            photo=photo,
+            albumId=album_id,
+            albumName=album_name
+        )
+    except Exception as e:
+        logger.error(f"Error in photo_details route: {e}")
+        return f"An error occurred: {e}", 500
+
+
 
 
 @app.route('/logout')
