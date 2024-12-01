@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ request.args.get('albumName') }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        .photo-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .photo-card img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .photo-card p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+
+        .back-link {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            font-size: 16px;
+            color: #007bff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #fff;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ request.args.get('albumName') }}</h1>
+    <div class="photo-grid">
+        {% for photo in photos %}
+            <div class="photo-card">
+                <img src="{{ photo.baseUrl }}=w400-h300" alt="{{ photo.filename }}">
+                <p>{{ photo.filename }}</p>
+            </div>
+        {% else %}
+            <p style="text-align: center; width: 100%;">No photos found in this album.</p>
+        {% endfor %}
+    </div>
+    <a href="{{ url_for('list_albums') }}" class="back-link">Back to Albums</a>
+</body>
+</html>
