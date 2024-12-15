@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 import requests
+import csv
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -97,15 +98,35 @@ def list_albums():
             scopes=session['credentials']['scopes']
         )
 
-        # Fetch albums using the Photos API
+        # Fetch albums using the Photos API with pagination
         headers = {'Authorization': f'Bearer {credentials.token}'}
-        response = requests.get('https://photoslibrary.googleapis.com/v1/albums', headers=headers)
-        
-        if response.status_code == 200:
-            albums = response.json().get('albums', [])
-        else:
-            logger.error(f"API error: {response.status_code} - {response.text}")
-            albums = []
+        albums = []
+        next_page_token = None
+
+        while True:
+            url = 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50'
+            if next_page_token:
+                url += f'&pageToken={next_page_token}'
+
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                albums.extend(data.get('albums', []))
+                next_page_token = data.get('nextPageToken')
+                if not next_page_token:
+                    break  # No more pages to fetch
+            else:
+                logger.error(f"API error: {response.status_code} - {response.text}")
+                break
+
+        # # Create a CSV file with album details
+        # csv_file_path = '/tmp/albums.csv'  # Temporary file path
+        # with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csvfile:
+        #     writer = csv.writer(csvfile)
+        #     writer.writerow(['Album Title', 'Album ID'])  # Header row
+        #     for album in albums:
+        #         writer.writerow([album.get('title', 'Untitled'), album.get('id', '')])
 
         return render_template('albums.html', albums=albums)
     except Exception as e:
